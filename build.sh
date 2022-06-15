@@ -566,7 +566,7 @@ source "${ROOT_DIR}/build/_setup_env.sh"
 MAKE_ARGS=( "$@" )
 export MAKEFLAGS="-j$(nproc) ${MAKEFLAGS}"
 export MODULES_STAGING_DIR=$(readlink -m ${COMMON_OUT_DIR}/staging)
-export MODULES_PRIVATE_DIR=$(readlink -m ${COMMON_OUT_DIR}/private)
+export MODULES_PRIVATE_DIR=$(readlink -m ${COMMON_OUT_DIR}/${CODENAME}/private)
 export KERNEL_UAPI_HEADERS_DIR=$(readlink -m ${COMMON_OUT_DIR}/kernel_uapi_headers)
 export INITRAMFS_STAGING_DIR=${MODULES_STAGING_DIR}/initramfs_staging
 export VENDOR_DLKM_STAGING_DIR=${MODULES_STAGING_DIR}/vendor_dlkm_staging
@@ -1095,7 +1095,9 @@ if [ -n "${MODULES}" ]; then
     cp ${MODULES_ROOT_DIR}/modules.load ${DIST_DIR}/vendor_boot.modules.load
     echo "${MODULES_OPTIONS}" > ${MODULES_ROOT_DIR}/modules.options
 
-    mkbootfs "${INITRAMFS_STAGING_DIR}" >"${MODULES_STAGING_DIR}/initramfs.cpio"
+    # Workaround strange issue where mkbootfs cannot be found on coral build
+    TMPTOOLROOT="$(dirname "$(realpath "$0")")"
+    $TMPTOOLROOT/../prebuilts/kernel-build-tools/linux-x86/bin/mkbootfs "${INITRAMFS_STAGING_DIR}" >"${MODULES_STAGING_DIR}/initramfs.cpio"
     ${RAMDISK_COMPRESS} "${MODULES_STAGING_DIR}/initramfs.cpio" >"${DIST_DIR}/initramfs.img"
   fi
 fi
